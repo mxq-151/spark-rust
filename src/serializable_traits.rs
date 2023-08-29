@@ -1,4 +1,5 @@
 use serde_traitobject::{deserialize, serialize, Deserialize, Serialize};
+use core::marker::Tuple;
 use std::{
     any,
     borrow::{Borrow, BorrowMut},
@@ -234,7 +235,8 @@ impl<T: fmt::Display + ?Sized> fmt::Display for Box<T> {
 
 impl<A, F: ?Sized> ops::FnOnce<A> for Box<F>
 where
-    F: FnOnce<A>,
+    A: Tuple,
+    F: FnOnce<A>
 {
     type Output = F::Output;
     extern "rust-call" fn call_once(self, args: A) -> Self::Output {
@@ -244,6 +246,7 @@ where
 
 impl<A, F: ?Sized> ops::FnMut<A> for Box<F>
 where
+    A: Tuple,
     F: FnMut<A>,
 {
     extern "rust-call" fn call_mut(&mut self, args: A) -> Self::Output {
@@ -253,7 +256,8 @@ where
 
 impl<A, F: ?Sized> ops::Fn<A> for Box<F>
 where
-    F: Func<A>,
+    A: Tuple,
+    F: Func<A> 
 {
     extern "rust-call" fn call(&self, args: A) -> Self::Output {
         self.0.call(args)
@@ -288,10 +292,12 @@ pub trait SerFunc<Args>:
     + 'static
     + Serialize
     + Deserialize
+    where Args:Tuple
 {
 }
 
 impl<Args, T> SerFunc<Args> for T where
+    Args: Tuple,
     T: Fn<Args>
         + Send
         + Sync
@@ -306,10 +312,12 @@ impl<Args, T> SerFunc<Args> for T where
 
 pub trait Func<Args>:
     ops::Fn<Args> + Serialize + Deserialize + Send + Sync + 'static + dyn_clone::DynClone
+    where Args:Tuple
 {
 }
 
 impl<T: ?Sized, Args> Func<Args> for T where
+    Args:Tuple,
     T: ops::Fn<Args> + Serialize + Deserialize + Send + Sync + 'static + dyn_clone::DynClone
 {
 }

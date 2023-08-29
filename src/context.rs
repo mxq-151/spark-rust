@@ -551,12 +551,12 @@ fn initialize_loggers<P: Into<PathBuf>>(file_path: P) {
             fs::File::create(file_path).expect("not able to create log file"),
         );
         let mut combined = vec![file_logger];
-        if let Some(term_logger) =
-            TermLogger::new(log_level, Config::default(), TerminalMode::Mixed)
-        {
+        let term_logger:Box<TermLogger> =
+            TermLogger::new(log_level, Config::default(), TerminalMode::Mixed,ColorChoice::Auto);
+        
             let logger: Box<dyn SharedLogger> = term_logger;
             combined.push(logger);
-        }
+        
         CombinedLogger::init(combined).unwrap();
     }
 

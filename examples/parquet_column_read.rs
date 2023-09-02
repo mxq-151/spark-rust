@@ -30,7 +30,7 @@ fn read(file: PathBuf) -> Vec<((i32, String, i64), (i64, f64))> {
     let reader = SerializedFileReader::new(file).unwrap();
     let metadata = reader.metadata();
     let batch_size = 500_000 as usize;
-    let iter = (0..metadata.num_row_groups()).flat_map(move |i| {
+    let iter = (0..metadata.num_row_groups()).flat_map( |i| {
         let row_group_reader = reader.get_row_group(i).unwrap();
         let mut first_reader =
             get_typed_column_reader::<Int32Type>(row_group_reader.get_column_reader(0).unwrap());
